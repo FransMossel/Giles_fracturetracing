@@ -1,0 +1,82 @@
+
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{epsfig, placeins, mathtools, caption}
+\usepackage{multicol, fullpage,natbib}
+
+\title{Description of Giles, used in the manuscript: \textit{Off-fault damage characterisation during and after experimental quasi-static and dynamic rupture in crustal rock from laboratory $P$-wave tomography and microstructures.} To be submitted to Journal of Geophysical Research: Solid Earth}
+\author{Franciscus M. Aben\thanks{f.aben@ucl.ac.uk}}
+\date{}
+
+\begin{document}
+\maketitle
+\begin{multicols}{2}
+
+\section*{\textbf{Text S1}: Giles - fracture tracin\textit{G} by med\textit{i}an filter, ske\textit{l}etonisation, and targ\textit{e}ted clo\textit{s}ure }
+We developed the fracture tracing code \textit{Giles} (fracture tracin\textbf{G} by med\textbf{i}an filter, ske\textbf{l}etonisation, and targ\textbf{e}ted clo\textbf{s}ure), which is capable of distinguishing open fractures from closed grain boundaries and pores. The input data consists of a scanning electron microscope (SEM) image and a set of user-defined input parameters. The approached followed in \textit{Giles} is detailed below. The Matlab-run software is freely available at github (https:\slash \slash github.com\slash FransMossel\slash  Giles\_ fracturetracing.git), and requires the image processing toolbox. We acknowledge the work on automated fracture tracing by \cite{Griffiths2017} which inspired \textit{Giles}, and urge to cite their paper also when using the fracture tracing code. 
+
+\subsubsection*{Giles: Methodology}
+Five steps are followed to convert a raw SEM image (Figure B1a) to an image containing traces of fractures (Figure B1b): i) Median filter, ii) binarisation, iii) morphological analysis, iv) targeted closure, and v) pruning. After describing these, the influence of the different user-defined parameters is illustrated.
+
+\paragraph{i) Median filter}
+The first step identifying the fractures in an SEM image. Fractures have low grayscale values (i.e. they are dark) because they are empty or filled with low density epoxy. They can thus be recognised by a sharp grayscale gradient between fracture and mineral, but such edge detection functions also detect closed grain boundaries between minerals with a density contrast. In addition, large aperture fractures will have two clear edges. Setting an absolute grayscale value threshold will identify the majority of fractures, but also includes pores that have similar low grayscale values. Here, the recognition of fractures is based on fracture aperture \cite[following][]{Griffiths2017}. Typically, the aperture of fractures is smaller than that of pores, which is leveraged by the median filter technique. 
+
+The median filter obtains a median grayscale value for an $m \times n$ area of pixels around the target pixel, and subscribes this value to the target pixel. This manipulation is performed for the entire image (Figure B2b). An $m \times n$ window larger than the fracture aperture and smaller than the pore aperture thus ascribes median grayscale values to fracture pixels that are much higher than the original value, but does not significantly change those of the pores. The difference between the original grayscale values and the median filtered values is therefore much higher in fractures than in surrounding minerals and pores (Figure B2c). The median filter window size or aperture is a user-defined parameter. 
+
+\paragraph{ii) Binarisation}
+The difference image (Figure B2c) is binarised by setting a user-defined universal threshold, where all values below this threshold are set to 0 (solid rock) and all values above it are set to 1 (fracture, Figure B2d). 
+
+\end{multicols}
+\begin{figure*}[h]
+\centering
+\includegraphics{figB1.eps}
+\caption{(a): SEM backscatter electron (BSE) image of Lanh\'elin granite that experienced controlled brittle failure. The image is taken at about 8~mm distance from the fault plane. (b): The same SEM image with the traced fractures overlain in red. Fractures were traced using \textit{Giles}. The bottom part of the sample that includes the scale bar has not been traced. The highlighted rectangle (black dashed line) shows the location of images B2 and B5a and b.}
+\label{fig:B1}
+\end{figure*} 
+\FloatBarrier
+
+\begin{figure*}
+\centering
+\includegraphics[scale = 1]{figB2.eps}
+\caption{(a): unprocessed SEM grayscale image showing fractures (dark) and minerals (light). Zoom location indicated in Figure B1. (b): Result of image (a) subjected to median filtering. Note that fractures are more blurred relative to the minerals. (c): Grayscale image resulting from the difference between image (a) and (b). (d): Binarised version of image (c). (e): The binary image after morphological filtering and closing. (f): The skeletonised binary image. }
+\label{fig:B2}
+\end{figure*} 
+
+\begin{multicols}{2}
+
+\paragraph{iii) Morphological analysis}
+Objects in a binarised image are a set of connected pixels with value 1. The smallest objects are removed first, for which the size is user-defined (usually 4-6 pixels). All remaining objects are subjected to morphological closing: First, they are dilated by a morphological object; in this case a line segment with a user-defined length. The dilation step adds the line segment to all boundary pixels of an object, increasing its size. This is followed by erosion by the same line segment, where dilated line segments that did not connect with other dilated objects are removed, returning the object to its original shape. Dilated line segments that did connect with other pixels remain in place during erosion, connecting the original object with other objects or closing gaps within the object (Figure B2e). Line segments are used as a morphological object since most objects are linear fracture traces. The erosion-dilation is performed with line segment orientations over a 180$^{\circ}$ range. The resulting binary image is skeletonised so that the thickness of the fracture traces is reduced to a single pixel (Figure B2f). 
+
+\paragraph{iv) Targeted closure}
+The morphological closing step connects a large number of the objects that should be connected based on the original SEM image. However, a large number of objects remain separated because the length of the morphological line segment is too short (Figure B3a). Aside from increasing the length of the line segment, which results in loss of detail (see discussion below), these gaps can be closed using a targeted closing algorithm. This `brute force' method works as follows: Only objects are considered with a size falling between an upper and lower size limit, excluding the largest connected fracture networks and the smaller `noise'-like objects. The filtered objects are considered as the target object one by one. The elongation, orientation of the longest axis, and the end-points of the target object are determined. The end-points of all other objects are determined as well, excluding the end-points of the target object but including all previously rejected objects. Round objects (i.e. a small pore or smaller fracture networks) are not considered, so that only small- to medium sized elongated fracture traces remain. The distance and angle between the target object end-point and all other object end-points are calculated. This data is filtered for distances smaller than a user-defined distance, and angles that fall within a range of the longest axis orientation $\pm \phi$, where $\phi$ is a user defined angle (usually 10-15$^{\circ}$). The closest end-point is chosen in case that several end-points fall within this region. The end-points are then connected through a straight line segment (Figure B3b), and the end-point archive is updated before the next end-point of the target object or the next target object is considered. 
+
+\begin{figure*}
+\centering
+\includegraphics[scale = 1]{figB3.eps}
+\caption{(a): Binary image showing disconnected fracture traces (red arrows). (b): The same binary image showing a connected fracture trace, achieved by the targeted closure algorithm.}
+\label{fig:B3}
+\end{figure*} 
+
+\paragraph{v) Pruning}
+\begin{figure*}
+\centering
+\includegraphics[scale = 1]{figB4.eps}
+\caption{(a): Binary image showing fracture traces surrounded by small objects. Note the residual branches on the larger fracture traces. (b): Image after pruning. (c): Image after regrowth. Note that the smaller residual branch and the small objects have not regrown. }
+\label{fig:B4}
+\end{figure*} 
+
+The skeletonisation process often results in the formation of small residual branches (Figure B2f, B4a). These branches are pruned. A user-defined pruning length is established. All branches in an image are shortened by iteratively removing the end-points. The binary image after each iteration is temporarily stored. The pruning of a branch is arrested once an end-point encounters a branch point in the object, or when the pruning length has been reached. After pruning, the branches are regrown by adding a $3\times3$ pixel array around each end-point, where the pixel corresponding with the  binary image stored during pruning is added to the regrown image. The shortest branches do not contain end-points anymore (their branch point has changed into a regular pixel), thus these branches are excluded from regrowth (Figure B4c). Objects shorter than the pruning length disappear as well (Figure B4c). The pruned and regrown binary image is the end-product given by \textit{Giles}. \\
+
+All user-defined parameters in \textit{Giles} depend on the image resolution and magnification, except for the binary threshold. Finding the right set of input parameters is thus a matter of trail and error. Once the desired parameter set is obtained for a single image, an entire set of images obtained at similar settings can be processed with minimal adjustments of the parameters. From experience, the three most important parameters are the binary threshold, the morphological closing length, and the aperture. The binary threshold can be decreased to include fainter fracture traces. The morphological closing length connects small objects, but also fills gaps in between, thereby obscuring details (Figure B5a). By reducing the closing length, smaller and closely spaced fractures can be recovered (Figure B5b), effectively increasing the resolution. As previously discussed, the fracture aperture determines whether larger voids are included in the analysis. This may lead to problems when a wide range of apertures is present within an image (Figure B5c). An increasing amount of larger open fractures are traced by increasing the aperture (Figure B5c-e, box \textbf{\textit{1}}). The trade-off is that regions with a high density of microfractures are less well traced (Figure B5c-e, box \textbf{\textit{2}}, \textbf{\textit{3}}). 
+
+\begin{figure*}
+\centering
+\includegraphics[scale = 1]{figB5.eps}
+\caption{(a), (b): Fracture tracing results with a longer morphological closing length (a) and a reduced closing length (b). Note that details on closely spaced fractures is lost for a longer length, while some fracture branches have not been traced with a shorter closing length. (c)-(e): Fracture tracing results along the principal slip zone of a sample, where both large open fractures and zones of intense micro-fracturing are encountered. The input aperture increase from 12 pixels (c) to 24 pixels (d) and 32 pixels (e). This increase the tracing results for open fractures (box \textbf{\textit{1}}), but decreases the resolution of tracing in intensely fractured areas (boxes \textbf{\textit{2}} and \textbf{\textit{3}}). }
+\label{fig:B5}
+\end{figure*} 
+
+\end{multicols}
+\bibliographystyle{agufull08}
+\bibliography{lit_all.bib}
+\end{document}
