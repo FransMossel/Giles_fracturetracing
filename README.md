@@ -1,5 +1,5 @@
-Fracture tracing script based on contrast difference, currently only tested on SEM BSE images. To use: run script. Change parameters according to results. Details on the parameters are found in the pdf manual. The script requires the image processing toolbox.
-This is an early version, so look out for future updates! 
+Fracture tracing script in MatLab based on contrast difference, currently only tested on SEM BSE images. To use: run script. Change parameters according to results. Details on the parameters are found in the pdf manual. The script requires the MatLab image processing toolbox.
+This is an early version, and (hopefully) a version in Julia will become available!
 
 Giles stands for:
 
